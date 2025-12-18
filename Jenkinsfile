@@ -1,11 +1,36 @@
-node {
-  stage('SCM') {
-    checkout scm
+pipeline {
+  agent any
+
+  tools {
+    maven 'Default Maven'
   }
-  stage('SonarQube Analysis') {
-    def mvn = tool 'Default Maven';
-    withSonarQubeEnv() {
-      sh "${mvn}/bin/mvn clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=pet_shop -Dsonar.projectName='pet_shop'"
+
+  stages {
+
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Build & SonarQube Analysis') {
+      steps {
+        withSonarQubeEnv('SonarQube') {
+          sh '''
+            mvn clean verify sonar:sonar \
+            -Dsonar.projectKey=pet_shop \
+            -Dsonar.projectName=pet_shop
+          '''
+        }
+      }
+    }
+
+    stage('Quality Gate') {
+      steps {
+        timeout(time: 5, unit: 'MINUTES') {
+          waitForQualityGate abortPipeline: true
+        }
+      }
     }
   }
 }
