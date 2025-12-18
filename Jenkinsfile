@@ -1,26 +1,11 @@
-pipeline {
-    agent {
-  label 'dev'
-}
-tools {
-  maven 'maven'
-}
-    stages {
-        stage('Git') {
-            steps {
-                git branch: 'main', url: 'https://github.com/vamsibyramala/pet_shop.git'
-            }
-        }
-        stage('maven') {
-            steps {
-                sh 'mvn clean package'
-            }
-        }
-        stage('deploy') {
-            steps {
-                deploy adapters: [tomcat9(alternativeDeploymentContext: '', credentialsId: 'tomcat', path: '', url: 'http://18.216.225.116:8080/')], contextPath: 'myapp', war: '**/*.war'
-            }
-        }
+node {
+  stage('SCM') {
+    checkout scm
+  }
+  stage('SonarQube Analysis') {
+    def mvn = tool 'Default Maven';
+    withSonarQubeEnv() {
+      sh "${mvn}/bin/mvn clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=pet_shop -Dsonar.projectName='pet_shop'"
     }
+  }
 }
-//comment
