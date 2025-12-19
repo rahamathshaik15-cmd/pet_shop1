@@ -18,8 +18,8 @@ pipeline {
         withSonarQubeEnv('SonarQube') {
           sh '''
             mvn clean verify sonar:sonar \
-            -Dsonar.projectKey=pet_shop \
-            -Dsonar.projectName=pet_shop
+            -Dsonar.projectKey=petshop \
+            -Dsonar.projectName=petshop
           '''
         }
       }
